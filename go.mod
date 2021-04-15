@@ -1,5 +1,9 @@
-module github.com/Cray-HPE/go-lib
+module github.com/rockholla/go-lib
 
-go 1.13
+require (
+	github.com/briandowns/spinner v1.12.0
+	github.com/fatih/color v1.10.0
+	github.com/stretchr/testify v1.7.0 // indirect
+)
 
-require github.com/stretchr/testify v1.6.1
+go 1.16
