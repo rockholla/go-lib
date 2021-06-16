@@ -85,7 +85,7 @@ func YAMLWithComments(data interface{}, atIndent int) (string, error) {
 			comment, _ := fieldType.Tag.Lookup("comment")
 			yamlKeyValue, _ := fieldType.Tag.Lookup("yaml")
 			yamlKeyValueParts := strings.Split(yamlKeyValue, ",")
-			if containsOmitEmpty(yamlKeyValueParts) || comment == "exclude" || yamlKeyValueParts[0] == "-" {
+			if (containsOmitEmpty(yamlKeyValueParts) && fieldValue.IsZero()) || comment == "exclude" || yamlKeyValueParts[0] == "-" {
 				continue
 			}
 			result = fmt.Sprintf("%s%s%s:", result, indent, yamlKeyValueParts[0])
