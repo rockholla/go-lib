@@ -5,22 +5,24 @@ import (
 )
 
 type testStruct struct {
-	FieldOne       string            `yaml:"fieldOne" help:"field one help"`
-	FieldTwo       string            `yaml:"fieldTwo" help:"field two help"`
-	EmbeddedObject *embeddedStruct   `yaml:"embeddedObject" help:"embedded object help"`
-	EmbeddedList   []*embeddedStruct `yaml:"embeddedList" help:"embedded list help"`
+	FieldOne              string            `yaml:"fieldOne" comment:"field one comment"`
+	FieldTwo              string            `yaml:"fieldTwo" comment:"field two comment"`
+	EmbeddedObject        *embeddedStruct   `yaml:"embeddedObject" comment:"embedded object comment"`
+	EmbeddedList          []*embeddedStruct `yaml:"embeddedList" comment:"embedded list comment"`
+	FieldOmittedZeroValue string            `yaml:"fieldOmittedZeroValue,omitempty"`
+	FieldOmittedNoMarshal string            `yaml:"-"`
 }
 
 type embeddedStruct struct {
-	EmbeddedFieldOne string `yaml:"embeddedFieldOne" help:"embedded field one"`
+	EmbeddedFieldOne string `yaml:"embeddedFieldOne" comment:"embedded field one"`
 }
 
 func TestYAMLWithComments(t *testing.T) {
-	expectedResult := `fieldOne: "" # field one help
-fieldTwo: "" # field two help
-embeddedObject: # embedded object help
+	expectedResult := `fieldOne: "" # field one comment
+fieldTwo: "" # field two comment
+embeddedObject: # embedded object comment
   embeddedFieldOne: "" # embedded field one
-embeddedList: # embedded list help
+embeddedList: # embedded list comment
 - embeddedFieldOne: "" # embedded field one
 - embeddedFieldOne: "" # embedded field one
 - # embedded field one

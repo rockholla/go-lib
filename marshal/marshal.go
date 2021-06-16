@@ -14,7 +14,7 @@ const (
 	indentation = 2
 )
 
-// YAMLWithComments will marshal an interface, respecting a "help" metadata/tag on a property/field as a comment for that property/field
+// YAMLWithComments will marshal an interface, respecting a "comment" metadata/tag on a property/field as a comment for that property/field
 func YAMLWithComments(data interface{}, atIndent int) (string, error) {
 	var result string
 
@@ -82,17 +82,17 @@ func YAMLWithComments(data interface{}, atIndent int) (string, error) {
 		for i := 0; i < dataValueOf.NumField(); i++ {
 			fieldValue := dataValueOf.Field(i)
 			fieldType := dataValueOf.Type().Field(i)
-			help, _ := fieldType.Tag.Lookup("help")
+			comment, _ := fieldType.Tag.Lookup("comment")
 			yamlKeyValue, _ := fieldType.Tag.Lookup("yaml")
-			if help == "exclude" || yamlKeyValue == "-" {
+			yamlKeyValueParts := strings.Split(yamlKeyValue, ",")
+			if containsOmitEmpty(yamlKeyValueParts) || comment == "exclude" || yamlKeyValueParts[0] == "-" {
 				continue
 			}
-			yamlKeyValue = strings.Split(yamlKeyValue, ",")[0]
-			result = fmt.Sprintf("%s%s%s:", result, indent, yamlKeyValue)
-			if help != "" {
-				help = fmt.Sprintf("# %s", help)
+			result = fmt.Sprintf("%s%s%s:", result, indent, yamlKeyValueParts[0])
+			if comment != "" {
+				comment = fmt.Sprintf("# %s", comment)
 			}
-			if err := processValue(fieldValue, help); err != nil {
+			if err := processValue(fieldValue, comment); err != nil {
 				return result, err
 			}
 		}
@@ -105,4 +105,13 @@ func YAMLWithComments(data interface{}, atIndent int) (string, error) {
 	reCompact, _ := regexp.Compile("(?m)\\n{2,}")
 	result = reCompact.ReplaceAllString(result, "\n")
 	return result, nil
+}
+
+func containsOmitEmpty(yamlTagValueSplit []string) bool {
+	for _, valueItem := range yamlTagValueSplit {
+		if valueItem == "omitempty" {
+			return true
+		}
+	}
+	return false
 }
