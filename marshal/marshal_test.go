@@ -17,6 +17,7 @@ type testStruct struct {
 	FieldOmittedNoMarshal string                     `yaml:"-"`
 	MapField              map[string]string          `yaml:"mapField" comment:"map field comment"`
 	MapComplexField       map[string]*embeddedStruct `yaml:"mapComplexField" comment:"map complex field"`
+	MapFieldZeroValue     map[string]string          `yaml:"mapFieldZeroValue,omitempty"`
 }
 
 type embeddedStruct struct {
@@ -45,6 +46,28 @@ mapField: # map field comment
 mapComplexField: # map complex field
   one:
     embeddedFieldOne: "one" # embedded field one
+`
+	expectedResultAlt := `fieldOne: "field one value" # field one comment
+fieldTwo: "field two value" # field two comment
+numberField: 14 # number field comment
+embeddedObject: # embedded object comment
+  embeddedFieldOne: "" # embedded field one
+embeddedObjectTwo: # embedded object two comment
+  embeddedFieldOne: | # embedded field one
+	  Multi-line
+	  indented some amount to be trimmed
+embeddedList: # embedded list comment
+- embeddedFieldOne: "" # embedded field one
+- embeddedFieldOne: "" # embedded field one
+- embeddedFieldOne: | # embedded field one
+	  Multi-line
+	  text
+mapField: # map field comment
+  two: "2"
+  one: "1"
+mapComplexField: # map complex field
+  one:
+	  embeddedFieldOne: "one" # embedded field one
 `
 	testStructInstance := &testStruct{
 		FieldOne:       "field one value",
@@ -76,12 +99,13 @@ text
 				EmbeddedFieldOne: "one",
 			},
 		},
+		MapFieldZeroValue: map[string]string{},
 	}
 	result, err := YAMLWithComments(testStructInstance, 0)
 	if err != nil {
 		t.Errorf("Got unexpected error in TestYAMLWithComments: %s", err)
 	}
-	if r, e := result, expectedResult; r != e {
-		t.Errorf("Got unexpected result from TestYAMLWithComments:\n%v", diff.LineDiff(e, r))
+	if r, e, ea := result, expectedResult, expectedResultAlt; r != e && r != ea {
+		t.Errorf("Got unexpected result from TestYAMLWithComments:\n%v%v", diff.LineDiff(e, r), diff.LineDiff(ea, r))
 	}
 }
