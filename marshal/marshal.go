@@ -49,10 +49,10 @@ func YAMLWithComments(data interface{}, atIndent int) (string, error) {
 				}
 			}
 		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Float32, reflect.Float64, reflect.Bool:
-			result = fmt.Sprintf("%s %v", result, value)
+			result = fmt.Sprintf("%s %v %s", result, value, comment)
 		default:
 			if strings.Contains(value.String(), "\n") {
-				result = fmt.Sprintf("%s\n %s |\n", comment, result)
+				result = fmt.Sprintf("%s | %s\n", result, comment)
 				multiline := ""
 				for _, line := range strings.Split(value.String(), "\n") {
 					line = strings.TrimSpace(line)
@@ -64,7 +64,10 @@ func YAMLWithComments(data interface{}, atIndent int) (string, error) {
 				}
 				result = fmt.Sprintf("%s%s", result, multiline)
 			} else {
-				result = fmt.Sprintf("%s \"%v\" %s", result, value, comment)
+				if comment != "" {
+					comment = fmt.Sprintf(" %s", comment)
+				}
+				result = fmt.Sprintf("%s \"%v\"%s", result, value, comment)
 			}
 		}
 		result = fmt.Sprintf("%s\n", result)
@@ -72,16 +75,18 @@ func YAMLWithComments(data interface{}, atIndent int) (string, error) {
 	}
 
 	// use reflection to construct our YAML string
-	dataTypeOf := reflect.TypeOf(data)
-	if dataTypeOf.Elem().Kind() == reflect.Struct {
-		dataValueOf := reflect.ValueOf(data)
-		if dataValueOf.IsNil() {
+	dataValue := reflect.ValueOf(data)
+	if dataValue.Kind() == reflect.Ptr {
+		if dataValue.IsNil() {
 			return result, nil
 		}
-		dataValueOf = dataValueOf.Elem()
-		for i := 0; i < dataValueOf.NumField(); i++ {
-			fieldValue := dataValueOf.Field(i)
-			fieldType := dataValueOf.Type().Field(i)
+		dataValue = dataValue.Elem()
+	}
+	switch dataValue.Kind() {
+	case reflect.Struct:
+		for i := 0; i < dataValue.NumField(); i++ {
+			fieldValue := dataValue.Field(i)
+			fieldType := dataValue.Type().Field(i)
 			comment, _ := fieldType.Tag.Lookup("comment")
 			yamlKeyValue, _ := fieldType.Tag.Lookup("yaml")
 			yamlKeyValueParts := strings.Split(yamlKeyValue, ",")
@@ -96,8 +101,15 @@ func YAMLWithComments(data interface{}, atIndent int) (string, error) {
 				return result, err
 			}
 		}
-	} else {
-		if err := processValue(reflect.ValueOf(data), ""); err != nil {
+	case reflect.Map:
+		for _, key := range dataValue.MapKeys() {
+			result = fmt.Sprintf("%s%s%s:", result, indent, key)
+			if err := processValue(dataValue.MapIndex(key), ""); err != nil {
+				return result, err
+			}
+		}
+	default:
+		if err := processValue(dataValue, ""); err != nil {
 			return result, err
 		}
 	}
