@@ -54,20 +54,20 @@ embeddedObject: # embedded object comment
   embeddedFieldOne: "" # embedded field one
 embeddedObjectTwo: # embedded object two comment
   embeddedFieldOne: | # embedded field one
-	  Multi-line
-	  indented some amount to be trimmed
+    Multi-line
+    indented some amount to be trimmed
 embeddedList: # embedded list comment
 - embeddedFieldOne: "" # embedded field one
 - embeddedFieldOne: "" # embedded field one
 - embeddedFieldOne: | # embedded field one
-	  Multi-line
-	  text
+    Multi-line
+    text
 mapField: # map field comment
   two: "2"
   one: "1"
 mapComplexField: # map complex field
   one:
-	  embeddedFieldOne: "one" # embedded field one
+    embeddedFieldOne: "one" # embedded field one
 `
 	testStructInstance := &testStruct{
 		FieldOne:       "field one value",
