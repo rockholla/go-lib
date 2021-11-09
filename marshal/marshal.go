@@ -35,7 +35,7 @@ func YAMLWithComments(data interface{}, atIndent int) (string, error) {
 			result = fmt.Sprintf("%s\n%s", result, nested)
 		case reflect.Slice:
 			if value.Len() == 0 {
-				result = fmt.Sprintf("%s []%s\n", result, comment)
+				result = fmt.Sprintf("%s [] %s\n", result, comment)
 			} else {
 				result = fmt.Sprintf("%s %s\n", result, comment)
 				for i := 0; i < value.Len(); i++ {
