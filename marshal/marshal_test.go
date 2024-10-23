@@ -63,8 +63,8 @@ embeddedList: # embedded list comment
     Multi-line
     text
 mapField: # map field comment
-  two: "2"
-  one: "1"
+	one: "1"
+	two: "2"
 mapComplexField: # map complex field
   one:
     embeddedFieldOne: "one" # embedded field one

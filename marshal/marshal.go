@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"reflect"
 	"regexp"
+	"sort"
 	"strings"
 )
 
@@ -102,9 +103,16 @@ func YAMLWithComments(data interface{}, atIndent int) (string, error) {
 			}
 		}
 	case reflect.Map:
+		sortedStringKeys := []string{}
+		stringKeysToMapValues := map[string]reflect.Value{}
 		for _, key := range dataValue.MapKeys() {
+			sortedStringKeys = append(sortedStringKeys, key.String())
+			stringKeysToMapValues[key.String()] = dataValue.MapIndex(key)
+		}
+		sort.Strings(sortedStringKeys)
+		for _, key := range sortedStringKeys {
 			result = fmt.Sprintf("%s%s%s:", result, indent, key)
-			if err := processValue(dataValue.MapIndex(key), ""); err != nil {
+			if err := processValue(stringKeysToMapValues[key], ""); err != nil {
 				return result, err
 			}
 		}
